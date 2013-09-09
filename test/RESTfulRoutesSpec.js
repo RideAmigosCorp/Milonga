@@ -238,7 +238,7 @@ describe('RESTful Resource', function () {
   });
 
   describe('with middleware', function () {
-
+    var middlewareRes;
     before(function (done) {
       Resource.collection.remove(function(err,res){    
         request(app)
@@ -246,20 +246,20 @@ describe('RESTful Resource', function () {
           .send({ name: 'New' })
           .end(function (error, response) {
             err = error;
-            res = response;
+            middlewareRes = response;
             done();
           });
       });
     });
 
     it('should respond 401', function () {
-      res.statusCode.should.equal(401);
+      middlewareRes.statusCode.should.equal(401);
     });
 
     it('should respond "Unauthorized"', function () {
-      res.text.should.equal('Unauthorized');
+      middlewareRes.text.should.equal('Unauthorized');
     });
-
+    
   });
 
 });
