@@ -5,16 +5,29 @@ module.exports = function (app) {
     if (!middleware) { middleware = []; }
 
     app.get(path + '/:id', middleware, function (req, res, next) {
-      model.find({ _id: req.params.id }, function (err, instance) {
-        if (err) { return next(err); }
-        res.json(instance);
-      });
+      
+      if(req.params.hasOwnProperty('id') && req.params.id != null){
+          model.findById(req.params.id, function (err, instance) {
+            if (err) { return next(err); }
+              res.json(instance);
+          });
+      }
+      else
+      {
+        model.find({},function (err, results) {
+            if (err) { return next(err); }
+            
+            res.json(results);
+        });
+      }
+      
+
     });
 
 
     app.post(path, middleware, function (req, res, next) {
       model.create(req.body, function (err, instance) {
-        if (err) { return next(err); }
+        if (err) { throw(err); return next(err); }
         res.json(201, instance);
       });
     });
@@ -32,7 +45,7 @@ module.exports = function (app) {
 
 
     app.del(path + '/:id', middleware, function (req, res, next) {
-      model.destroy({ _id: req.params.id }, function (err) {
+      model.remove({ _id: req.params.id }, function (err) {
         if (err) { return next(err); }
         res.send(204);
       });

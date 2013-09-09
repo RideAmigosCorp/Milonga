@@ -6,10 +6,7 @@ var cwd = process.cwd()
   , path = require('path')
   , chai = require('chai')
   , expect = chai.expect
-  , request = require('supertest')
-  ;
-
-
+  , request = require('supertest');
 /**
  * Should style assertions
  */
@@ -26,15 +23,17 @@ var express = require('express')
   , BasicStrategy = require('passport-http').BasicStrategy
   , Model = require('modinha')
   , app = express()
-  ;
+  , mongoose = require('mongoose');
 
+mongoose.connect('mongodb://localhost/milonga');
 
-var Resource = Model.extend(null, {
-  schema: {
-    name: { type: 'string', required: true },
+var resourceSchema = mongoose.Schema({
+  name: { type: 'string', required: true },
     desc: { type: 'string' }
-  }
 });
+
+var Resource = mongoose.model('Resource',resourceSchema);
+
 
 
 app.configure(function () {
@@ -73,9 +72,11 @@ describe('RESTful Resource', function () {
 
 
   before(function (done) {
-    Resource.create({ name: 'Whatever' }, function (error, instance) {
-      resource = instance;
-      done();
+    Resource.collection.remove(function(err,res){    
+      Resource.create({ name: 'Whatever' }, function (error, instance) {
+        resource = instance;
+        done();
+      });
     });
   });
 
@@ -115,15 +116,16 @@ describe('RESTful Resource', function () {
   describe('POST /resources', function () {
 
     before(function (done) {
-      Resource.backend.reset();
-      request(app)
-        .post('/resources')
-        .send({ name: 'New' })
-        .end(function (error, response) {
-          err = error;
-          res = response;
-          done();
-        });
+      Resource.collection.remove(function(err,res){    
+        request(app)
+          .post('/resources')
+          .send({ name: 'New' })
+          .end(function (error, response) {
+            err = error;
+            res = response;
+            done();
+          });
+        })
     });
 
     it('should respond 201', function () {
@@ -144,16 +146,19 @@ describe('RESTful Resource', function () {
   describe('PUT /resources/:id', function () {
 
     before(function (done) {
-      Resource.backend.reset();
-      Resource.create({ name: 'initial' }, function (err, instance) {
-        request(app)
-          .put('/resources/' + instance._id)
-          .send({ name: 'changed' })
-          .end(function (error, response) {
-            err = error;
-            res = response;
-            done();
-          });
+      Resource.collection.remove(function(err,res){    
+
+        Resource.create({ name: 'initial' }, function (err, instance) {
+          request(app)
+            .put('/resources/' + instance._id)
+            .send({ name: 'changed' })
+            .end(function (error, response) {
+              err = error;
+              res = response;
+              done();
+            });
+        });
+
       });
     });
 
@@ -175,17 +180,16 @@ describe('RESTful Resource', function () {
   describe('DELETE /resources/:id', function () {
 
     before(function (done) {
-      Resource.backend.reset();
-      Resource.backend.documents.length.should.equal(0);
-
-      Resource.create({ name: 'to be deleted' }, function (err, instance) {
-        request(app)
-          .del('/resources/' + instance._id)
-          .end(function (error, response) {
-            err = error;
-            res = response;
-            done();
-          });
+      Resource.collection.remove(function(err,res){        
+        Resource.create({ name: 'to be deleted' }, function (err, instance) {
+          request(app)
+            .del('/resources/' + instance._id)
+            .end(function (error, response) {
+              err = error;
+              res = response;
+              done();
+            });
+        });
       });
     });
 
@@ -203,15 +207,16 @@ describe('RESTful Resource', function () {
   describe('with middleware', function () {
 
     before(function (done) {
-      Resource.backend.reset();
-      request(app)
-        .post('/private')
-        .send({ name: 'New' })
-        .end(function (error, response) {
-          err = error;
-          res = response;
-          done();
-        });
+      Resource.collection.remove(function(err,res){    
+        request(app)
+          .post('/private')
+          .send({ name: 'New' })
+          .end(function (error, response) {
+            err = error;
+            res = response;
+            done();
+          });
+      });
     });
 
     it('should respond 401', function () {
