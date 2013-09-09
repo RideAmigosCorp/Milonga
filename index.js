@@ -4,23 +4,23 @@ module.exports = function (app) {
 
     if (!middleware) { middleware = []; }
 
+     app.get(path, middleware, function (req, res, next) {
+      
+     
+        model.find({},function (err, results) {
+            if (err) { return next(err); }
+            res.json(results);
+        });
+      
+
+    });
+
     app.get(path + '/:id', middleware, function (req, res, next) {
       
-      if(req.params.hasOwnProperty('id') && req.params.id != null){
           model.findById(req.params.id, function (err, instance) {
             if (err) { return next(err); }
               res.json(instance);
-          });
-      }
-      else
-      {
-        model.find({},function (err, results) {
-            if (err) { return next(err); }
-            
-            res.json(results);
-        });
-      }
-      
+          }); 
 
     });
 
@@ -45,7 +45,7 @@ module.exports = function (app) {
 
 
     app.del(path + '/:id', middleware, function (req, res, next) {
-      model.remove({ _id: req.params.id }, function (err) {
+      model.findByIdAndRemove(req.params.id, function (err) {
         if (err) { return next(err); }
         res.send(204);
       });

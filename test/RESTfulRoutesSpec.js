@@ -34,8 +34,6 @@ var resourceSchema = mongoose.Schema({
 
 var Resource = mongoose.model('Resource',resourceSchema);
 
-
-
 app.configure(function () {
   app.use(express.bodyParser());
   app.use(express.methodOverride());
@@ -82,7 +80,27 @@ describe('RESTful Resource', function () {
 
 
   describe('GET /resources', function () {
+    before(function (done) {
+      request(app)
+        .get('/resources/')
+        .end(function (error, response) {
+          err = error;
+          res = response;
+          done();
+        });
+    });
 
+    it('should respond 200', function () {
+      res.statusCode.should.equal(200);
+    });
+
+    it('should respond with JSON', function () {
+      res.headers['content-type'].should.contain('application/json');
+    });
+
+    it('should respond with an array of resources', function () {
+      expect(res.body.length).to.be.at.least(1);
+    });
   });
 
 
@@ -114,6 +132,7 @@ describe('RESTful Resource', function () {
 
 
   describe('POST /resources', function () {
+    var postError,postResponse;
 
     before(function (done) {
       Resource.collection.remove(function(err,res){    
@@ -121,34 +140,41 @@ describe('RESTful Resource', function () {
           .post('/resources')
           .send({ name: 'New' })
           .end(function (error, response) {
-            err = error;
-            res = response;
+            postError = error;
+            postResponse = response;
             done();
           });
         })
     });
 
     it('should respond 201', function () {
-      res.statusCode.should.equal(201);
+      postResponse.statusCode.should.equal(201);
     });
 
     it('should respond with JSON', function () {
-      res.headers['content-type'].should.contain('application/json');
+      postResponse.headers['content-type'].should.contain('application/json');
     });
 
-    it('should create a new resource', function () {
-      Resource.backend.documents[0].name.should.equal('New');
+    it('should create a new resource', function (done) {
+      var newID = postResponse.body._id;
+      Resource.findById(newID,function(err,res){
+        expect(res).to.not.be.null;
+        expect(res._id.toString()).to.equal(newID.toString());
+        done()
+      })
+
     });
 
   });
 
 
   describe('PUT /resources/:id', function () {
-
+    var instanceID;
     before(function (done) {
       Resource.collection.remove(function(err,res){    
 
         Resource.create({ name: 'initial' }, function (err, instance) {
+          instanceID = instance._id;
           request(app)
             .put('/resources/' + instance._id)
             .send({ name: 'changed' })
@@ -170,14 +196,19 @@ describe('RESTful Resource', function () {
       res.headers['content-type'].should.contain('application/json');
     });
 
-    it('should create a new resource', function () {
-      Resource.backend.documents[0].name.should.equal('changed');
+    it('should modify an existing resource', function (done) {
+      Resource.findById(instanceID,function(err,res){
+        expect(res).to.not.be.null;
+        expect(res.name).to.equal("changed");
+        done()
+      })
     });
 
   });
 
 
   describe('DELETE /resources/:id', function () {
+    var deleteResponse, deleteError;
 
     before(function (done) {
       Resource.collection.remove(function(err,res){        
@@ -185,8 +216,8 @@ describe('RESTful Resource', function () {
           request(app)
             .del('/resources/' + instance._id)
             .end(function (error, response) {
-              err = error;
-              res = response;
+              deleteError = error;
+              deleteResponse = response;
               done();
             });
         });
@@ -194,15 +225,17 @@ describe('RESTful Resource', function () {
     });
 
     it('should respond 204', function () {
-      res.statusCode.should.equal(204);
+      deleteResponse.statusCode.should.equal(204);
     });
 
-    it('should destroy the resource resource', function () {
-      Resource.backend.documents.length.should.equal(0);
+    it('should destroy the resource resource', function (done) {
+      Resource.find({},function(err,response){
+        expect(response).to.be.empty;
+        done()
+      })
     });
 
   });
-
 
   describe('with middleware', function () {
 
