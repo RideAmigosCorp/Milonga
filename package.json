@@ -1,6 +1,6 @@
 {
-  "name": "milonga",
-  "description": "Milonga is a helper for defining a set of RESTful Express routes based on Modinha models.",
+  "name": "milonga-ra",
+  "description": "Milonga-ra is a helper for defining a set of RESTful Express routes based on Mongoose models.",
   "author": {
     "name": "Christian Smith",
     "email": "smith@anvil.io",
@@ -9,7 +9,7 @@
   "version": "0.0.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/christiansmith/Milonga.git"
+    "url": "https://github.com/rideamigoscorp/Milonga.git"
   },
   "main": "index.js",
   "license": "MIT",
