@@ -25,7 +25,6 @@ var express = require('express')
   , app = express()
   , mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/milonga');
 
 var resourceSchema = mongoose.Schema({
   name: { type: 'string', required: true },
@@ -46,8 +45,11 @@ app.configure(function () {
   });
 });
 
+var username = "foo";
+var password = "bar";
+
 passport.use('basic', new BasicStrategy(function (username, password, done) {
-  if (username !== 'foo' || password !== 'bar') {
+  if (username !== username || password !== password) {
     done(null, false);
   } else {
     next(null, {});
@@ -259,7 +261,9 @@ describe('RESTful Resource', function () {
     it('should respond "Unauthorized"', function () {
       middlewareRes.text.should.equal('Unauthorized');
     });
-    
+
   });
 
 });
+
+mongoose.connection.close();
