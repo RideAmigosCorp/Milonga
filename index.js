@@ -5,7 +5,6 @@ module.exports = function (app) {
     if (!middleware) { middleware = []; }
 
      app.get(path, middleware, function (req, res, next) {
-      console.log("something!")
         model.find({},function (err, results) {
             if (err) { return next(err); }
             res.json(results);
@@ -59,8 +58,7 @@ module.exports = function (app) {
         throw("Must include middleware for auth")
 
      app.get(path, middleware, function (req, res, next) {
-        console.log("something")
-
+        
         var params = {}
         params[resourceUserIDField] = req.user[sessionUserIDField];
        
